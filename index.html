@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jobfolio</title>
+  <meta name="description" content="A simple, private job application tracker.">
+
+  <!-- Home screen app settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Jobfolio">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <span class="topbar-title">Jobfolio</span>
+      <button class="icon-btn" id="menuBtn" type="button" aria-label="Backup and settings" data-icon="more"></button>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="hero">
+      <p class="eyebrow" id="todayLabel"></p>
+      <h1 class="large-title">Jobfolio</h1>
+      <p class="subtitle" id="subtitle"></p>
+    </section>
+
+    <section class="stats" id="stats" aria-label="Summary"></section>
+
+    <div class="search">
+      <span class="search-icon" data-icon="search"></span>
+      <input type="search" id="search" placeholder="Search jobs, companies, notes" autocomplete="off" autocorrect="off" enterkeyhint="search" aria-label="Search">
+      <button type="button" class="search-clear" id="searchClear" aria-label="Clear search" hidden>&times;</button>
+    </div>
+
+    <nav class="segmented" id="filters" aria-label="Filter jobs">
+      <span class="seg-thumb"></span>
+      <button type="button" data-filter="all" class="active">All</button>
+      <button type="button" data-filter="urgent">Urgent<b class="seg-count" id="urgentCount"></b></button>
+      <button type="button" data-filter="active">Active</button>
+      <button type="button" data-filter="closed">Closed</button>
+    </nav>
+
+    <section class="list" id="list" aria-live="polite"></section>
+
+    <div class="empty" id="empty" hidden>
+      <svg class="empty-art" viewBox="0 0 160 120" aria-hidden="true">
+        <rect x="30" y="18" width="100" height="30" rx="10" class="ea-1"/>
+        <rect x="20" y="44" width="120" height="38" rx="12" class="ea-2"/>
+        <circle cx="42" cy="63" r="9" class="ea-3"/>
+        <rect x="58" y="56" width="52" height="6" rx="3" class="ea-4"/>
+        <rect x="58" y="67" width="34" height="5" rx="2.5" class="ea-5"/>
+        <rect x="114" y="57" width="18" height="11" rx="5.5" class="ea-3"/>
+        <rect x="34" y="90" width="92" height="14" rx="7" class="ea-1"/>
+      </svg>
+      <h2 id="emptyTitle">No applications yet</h2>
+      <p id="emptyText">Tap “Add job” to log your first application. Everything stays private on this phone.</p>
+    </div>
+  </main>
+
+  <div class="fab-wrap">
+    <button class="fab" id="addBtn" type="button"><span data-icon="plus"></span>Add job</button>
+  </div>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Add / edit job -->
+  <section class="sheet" id="jobSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+    <div class="sheet-handle">
+      <div class="grabber"></div>
+      <header class="sheet-head">
+        <button type="button" class="text-btn" data-close>Cancel</button>
+        <h2 id="sheetTitle">New job</h2>
+        <button type="submit" class="text-btn strong" form="jobForm">Save</button>
+      </header>
+    </div>
+
+    <form id="jobForm" class="sheet-body" novalidate autocomplete="off">
+      <div class="group">
+        <input class="field field-title" name="title" placeholder="Job title" autocapitalize="words" enterkeyhint="next" aria-label="Job title">
+        <input class="field" name="company" placeholder="Company" autocapitalize="words" enterkeyhint="next" aria-label="Company">
+        <input class="field" name="location" placeholder="Location (e.g. Manchester or Remote)" autocapitalize="words" enterkeyhint="done" aria-label="Location">
+      </div>
+
+      <p class="group-label">Status</p>
+      <div class="status-picker" id="statusPicker"></div>
+
+      <div class="followup" id="followupBox" hidden>
+        <span class="followup-icon" data-icon="bell"></span>
+        <div class="followup-text">
+          <b>Time to follow up</b>
+          <span id="followupText"></span>
+        </div>
+        <button type="button" class="followup-btn" id="followedUpBtn">I’ve followed up</button>
+      </div>
+
+      <p class="group-label">Dates</p>
+      <div class="group">
+        <div class="row">
+          <span>Date applied</span>
+          <div class="date-field">
+            <span class="date-display"></span>
+            <input type="date" name="applied" aria-label="Date applied">
+            <button type="button" class="date-clear" aria-label="Clear date applied">&times;</button>
+          </div>
+        </div>
+        <div class="row">
+          <span>Closing date</span>
+          <div class="date-field">
+            <span class="date-display"></span>
+            <input type="date" name="closing" aria-label="Closing date">
+            <button type="button" class="date-clear" aria-label="Clear closing date">&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="group-label">Details</p>
+      <div class="group">
+        <div class="row row-link">
+          <input class="field bare" type="url" name="link" placeholder="Link to the advert" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Link to the advert">
+          <a class="open-link" id="openLink" target="_blank" rel="noopener" hidden>Open <span data-icon="external"></span></a>
+        </div>
+        <label class="row">
+          <span>Cover letter sent</span>
+          <span class="switch"><input type="checkbox" name="coverLetter" aria-label="Cover letter sent"><i></i></span>
+        </label>
+        <input class="field" name="contact" placeholder="Contact name" autocapitalize="words" aria-label="Contact name">
+      </div>
+
+      <p class="group-label">Notes</p>
+      <div class="group">
+        <textarea class="field" name="notes" rows="4" placeholder="Salary, interview prep, who you spoke to…" aria-label="Notes"></textarea>
+      </div>
+
+      <div id="editExtras" hidden>
+        <button type="button" class="danger-btn" id="deleteBtn">Delete job</button>
+        <p class="meta-note" id="metaNote"></p>
+      </div>
+    </form>
+  </section>
+
+  <!-- Backup menu -->
+  <section class="sheet compact" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle" aria-hidden="true">
+    <div class="sheet-handle">
+      <div class="grabber"></div>
+      <header class="sheet-head">
+        <span></span>
+        <h2 id="menuTitle">Backup</h2>
+        <button type="button" class="text-btn strong" data-close>Done</button>
+      </header>
+    </div>
+    <div class="sheet-body">
+      <div class="group">
+        <button type="button" class="menu-item" id="exportBtn">
+          <span class="mi-icon" style="--c: var(--green)" data-icon="download"></span>
+          <span class="mi-text"><b>Export spreadsheet</b><small>Save a backup you can open in Excel, Numbers or Google Sheets</small></span>
+          <span class="mi-chev" data-icon="chevron"></span>
+        </button>
+        <button type="button" class="menu-item" id="importBtn">
+          <span class="mi-icon" style="--c: var(--blue)" data-icon="upload"></span>
+          <span class="mi-text"><b>Restore from backup</b><small>Load jobs from a Jobfolio spreadsheet (.csv)</small></span>
+          <span class="mi-chev" data-icon="chevron"></span>
+        </button>
+      </div>
+      <p class="footnote" id="backupNote"></p>
+
+      <div class="group about">
+        <span class="mi-icon" style="--c: var(--purple)" data-icon="lock"></span>
+        <p>Your jobs are saved privately on this phone only — no account, no tracking. Export a backup every so often in case you change phones or clear Safari’s data.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status"><span id="toastText"></span><button type="button" id="toastAction" hidden></button></div>
+  <input type="file" id="importFile" accept=".csv,text/csv" hidden>
+
+  <script src="app.js"></script>
+</body>
+</html>
